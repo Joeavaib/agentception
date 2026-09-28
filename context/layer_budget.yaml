@@ -1,0 +1,47 @@
+# layer_budget v1 — Budget-Envelope L1-L4 (s06)
+# Envelope: 7000 Tokens max (7k), Switch 3-4k statt 20k
+# Regeln (AGENTS.md R2/R4): static-first, Cutoff statt Kompression, Default-Deny
+version: 1
+owner_step: s06-layer-budget
+encoding: LF-only UTF-8 ohne BOM
+envelope:
+  max_tokens: 7000
+  envelope_7k: true
+  switch_budget: 3-4k statt 20k
+  strategy: Cutoff statt Kompression
+layers:
+  L1:
+    budget_tokens: 3000
+    inhalt: gecacht (AGENTS.md frozen core, stabiler Prefix)
+    cache: true
+  L2:
+    budget_tokens: 2000
+    inhalt: Pointer+Delta (Git-SHA, Blob-Pointer, diff-stat)
+    cache: false
+  L3:
+    budget_tokens: 1500
+    inhalt: Window (aktuelle Task-Fenster, .handoff.md Resume-Paket)
+    cache: false
+  L4:
+    budget_tokens: 500
+    inhalt: Profil (Tool-Profil, Switch-Target, volatile Suffix)
+    cache: false
+filter:
+  default: deny
+  allow:
+    - AGENTS.md
+    - context/handoff_schema.yaml
+    - context/layer_budget.yaml
+  deny:
+    - secrets
+    - voll-logs
+    - unreferenzierte-diffs
+switch:
+  S_skip unter_5k: kein Paket, nur SHA
+  M_5-bis-20k: 800 Tokens Paket
+  L_20-bis-80k: 1.5k Tokens Paket
+notes:
+  - Summe L1-L4 = 7000 (3k+2k+1.5k+0.5k)
+  - Default-Deny: nur Allow-Liste passiert Filter
+  - Cutoff hinten (L4 zuerst), nie Prefix umschreiben
+  - kein Secret im Budget

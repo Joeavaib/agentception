@@ -1,0 +1,34 @@
+# handoff_schema v1 — Resume-Paket Kontrakt (s03)
+# Budget: max 1200 Tokens (~4800 chars) fuer .handoff.md
+version: 1
+owner_step: s03-resume-packet
+budget_tokens_max: 1200
+budget_chars_max: 4800
+encoding: LF-only UTF-8 ohne BOM
+order: stabil vorne, volatil hinten
+required_fields:
+  - goal
+  - constraints
+  - done
+  - tried_failed
+  - next_steps
+  - verify
+  - pointers
+  - erstellt_am
+  - commit
+  - gueltig_bis
+limits:
+  constraints_max: 3
+  tried_failed_max: 3
+  tried_failed_line_max_chars: 80
+  next_steps_max: 3
+  pointers_max: 5
+  done_entry: SHA oder file_zeile Pflicht
+  tried_failed_format: Versuch->Symptom->Grund
+  next_steps_format: Checkboxliste
+  verify_format: exakter Shell-Befehl
+  pointers_format: file_zeile oder SHA
+notes:
+  - Negativ-Wissen als Signatur, keine Voll-Logs
+  - kein Secret im Paket
+  - volatil (erstellt_am/commit/gueltig_bis) ans Ende

@@ -1,0 +1,6 @@
+# Scratch / Runtime-State (kein Switch-Payload, nie committen)
+.rfg/
+__pycache__/
+*.pyc
+.pytest_cache/
+.benchmarks/
