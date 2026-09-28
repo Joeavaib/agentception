@@ -1,29 +1,31 @@
-# agentception — Tool-Switch ohne Re-Explaining
+# agentception — Tool-Switch without Re-Explaining
 
-Wechsle zwischen KI-Coding-Tools (Claude Code, Codex, Opencode, Grok, …),
-ohne Kontext neu zu erklären: stabiler Prefix vorne (Cache-Hit), Volatiles
-hinten, Git-SHA als Anker statt Copy-Paste. Plain Markdown + stdlib-Skripte,
-kein Vendor-Lock-in.
+Switch between AI coding tools (Claude Code, Codex, Opencode, Grok, …)
+without re-explaining context: stable prefix first (cache hit), volatiles
+last, Git-SHA as anchor instead of copy-paste. Plain Markdown + stdlib
+scripts, no vendor lock-in.
 
-## Quickstart (nach dem Clonen)
+> Deutsche Version: [README.de.md](README.de.md)
+
+## Quickstart (after cloning)
 
 ```sh
-cp .handoff.example.md .handoff.md   # 1. lokales Handoff anlegen (bleibt ungetrackt)
-# 2. TODOs in .handoff.md fuellen: erstellt_am=jetzt (UTC), gueltig_bis=+2h, commit=HEAD-SHA
-python3 tools/verify_handoff.py --check   # 3. Step-0: FRESH erwartet
-python3 -m pytest tests/ -q               # 4. Tests gruen
-tools/switch_to_codex.sh --check          # 5. Switch-Bereitschaft (Ampel S/M/L)
-tools/switch_to_codex.sh --out paket.md   # 6. copy: Paket erzeugen, paste: im Ziel-Tool einfuegen, resume: dort Step-0 fahren
+cp .handoff.example.md .handoff.md   # 1. create local handoff (stays untracked)
+# 2. fill TODOs in .handoff.md: erstellt_am=now (UTC), gueltig_bis=+2h, commit=HEAD-SHA
+python3 tools/verify_handoff.py --check   # 3. Step-0: expect FRESH
+python3 -m pytest tests/ -q               # 4. tests green
+tools/switch_to_codex.sh --check          # 5. switch readiness (level S/M/L)
+tools/switch_to_codex.sh --out packet.md  # 6. copy: build packet, paste: insert in target tool, resume: run Step-0 there
 ```
 
-## Doku
+## Docs
 
-- `AGENTS.md` — Single Source (frozen core, Regeln R1–R7)
-- `docs/switch-ux.md` — Journey copy-paste-resume, Ampel, No-Bypass
-- `docs/verify-first.md` — Step-0 Ritual, Stale-Detektor
-- `docs/git-anchor.md` — WIP-Handoff via SHA/Blob-Pointer
-- `docs/layer-budget.md` — Budget-Envelope 7k (L1–L4)
-- `context/handoff_schema.yaml` — Resume-Paket-Kontrakt (max 1200 Tokens)
+- `AGENTS.md` — Single Source (frozen core, rules R1–R7)
+- `docs/switch-ux.md` — copy-paste-resume journey, level, No-Bypass
+- `docs/verify-first.md` — Step-0 ritual, stale detector
+- `docs/git-anchor.md` — WIP handoff via SHA/blob pointer
+- `docs/layer-budget.md` — budget envelope 7k (L1–L4)
+- `context/handoff_schema.yaml` — resume-packet contract (max 1200 tokens)
 
-Regeln: kein Secret in Paket/Logs (Denylist), LF-only UTF-8 ohne BOM,
-Cutoff statt Kompression, Volatiles nur als Suffix.
+Rules: no secrets in packets/logs (denylist), LF-only UTF-8 without BOM,
+cutoff instead of compression, volatiles as suffix only.
