@@ -21,6 +21,8 @@ Frisch geklont? Erst `cp .handoff.example.md .handoff.md`, TODOs fuellen
 | Fall | Signal | Folge |
 | --- | --- | --- |
 | SHA-mismatch | `commit:`-SHA != HEAD | STALE (Drift seit Handoff, `git diff <SHA> HEAD --stat`) |
+| WIP bekannt | `commit:` = WIP-SHA + Marker, Objekt per `git cat-file -e` da | ok (`git stash create`-Flow, docs/git-anchor.md) |
+| WIP ohne Objekt | WIP-Marker, Objekt fehlt (Cross-Machine-Paste) | STALE (Uncommittedes nicht per Paste uebertragbar) |
 | TTL-expired | jetzt > `gueltig_bis` | STALE (TTL 2h um, kein Recycling) |
 | TTL-Bruch | `gueltig_bis` != `erstellt_am` + 2h | STALE (Kontrakt verletzt) |
 | mtime-stale | Datei nach `gueltig_bis` geaendert | STALE (Zombie-Verdacht) |

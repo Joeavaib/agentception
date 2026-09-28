@@ -158,8 +158,20 @@ def check_provenance(text: str, now: datetime) -> tuple[str, bool]:
     return (f"provenance: ok (TTL frisch, Rest {left}s bis {gueltig_raw})", True)
 
 
-def check_sha(commit_field: str | None, head: str | None) -> tuple[str, bool]:
-    """SHA==HEAD (unborn -> ok mit Hinweis, mismatch -> STALE)."""
+def object_exists(root: Path, sha: str) -> bool:
+    """SHA im Objektstore? (`git cat-file -e`, erkennt WIP-Pointer aus `stash create`)."""
+    rc, _ = _run_git(["cat-file", "-e", sha], root)
+    return rc == 0
+
+
+def check_sha(commit_field: str | None, head: str | None, root: Path | None = None) -> tuple[str, bool]:
+    """SHA==HEAD (unborn -> ok mit Hinweis, mismatch -> STALE).
+
+    WIP-Ausnahme (docs/git-anchor.md): Feld mit WIP-Marker + SHA, das als
+    Objekt im Repo existiert (`git stash create -q`), ist ok ohne HEAD-Match.
+    WIP-Marker ohne Objekt -> STALE (kein Zombie-Recycling, kein Cross-Machine-
+    Paste von Uncommittedem).
+    """
     if head is None:
         return ("sha: ok (HEAD unborn, kein Vergleich moeglich)", True)
     if not commit_field:
@@ -170,6 +182,10 @@ def check_sha(commit_field: str | None, head: str | None) -> tuple[str, bool]:
     short = m.group(0)
     if head.startswith(short) or short.startswith(head[:7]):
         return (f"sha: ok (SHA==HEAD {head[:12]})", True)
+    if "wip" in commit_field.lower():
+        if root is not None and object_exists(root, short):
+            return (f"sha: ok (WIP-SHA bekannt, Objekt {short[:12]} vorhanden)", True)
+        return (f"sha: STALE (WIP-SHA {short[:12]} ohne Objekt: Uncommittedes nicht per Paste uebertragbar)", False)
     return (f"sha: STALE (SHA-mismatch: handoff={short} vs HEAD={head[:12]})", False)
 
 
@@ -231,7 +247,7 @@ def do_check(root: Path, handoff: Path, now: datetime | None = None) -> int:
         print(f"HEAD: {hint}")
     ok_all = True
     # 1. SHA
-    msg, ok = check_sha(read_field(text, "commit"), head)
+    msg, ok = check_sha(read_field(text, "commit"), head, root)
     print(msg)
     ok_all &= ok
     # 2. Read (Pflichtfelder)
@@ -314,6 +330,38 @@ def do_selftest(root: Path) -> int:
         msg, ok = check_sha("a" * 40, "a" * 40)
         if not ok or "ok" not in msg:
             print(f"selftest: FAIL (SHA-match Funktionstest: {msg})")
+            return 1
+        # 2b. WIP-Ausnahme: Marker + vorhandenes Objekt -> ok, ohne Objekt -> STALE
+        import subprocess as _sp
+
+        wip_root = tmp / "wiprepo"
+        wip_root.mkdir()
+        _sp.run(["git", "init", "-q", "-b", "master"], cwd=str(wip_root), check=True)
+        (wip_root / "f.txt").write_text("x\n", encoding="utf-8")
+        _sp.run(["git", "-c", "user.name=t", "-c", "user.email=t@t", "add", "-A"], cwd=str(wip_root), check=True)
+        _sp.run(
+            ["git", "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "wip"],
+            cwd=str(wip_root),
+            check=True,
+        )
+        (wip_root / "f.txt").write_text("y\n", encoding="utf-8")
+        wip_sha = _sp.run(
+            ["git", "-c", "user.name=t", "-c", "user.email=t@t", "stash", "create", "-q"],
+            cwd=str(wip_root),
+            capture_output=True,
+            text=True,
+        ).stdout.strip()
+        if not wip_sha:
+            print("selftest: FAIL (kein WIP-SHA erzeugbar)")
+            return 1
+        wip_head, _ = get_head(wip_root)
+        msg, ok = check_sha(f"{wip_sha} (WIP, uncommitted)", wip_head, wip_root)
+        if not ok or "WIP" not in msg:
+            print(f"selftest: FAIL (WIP mit Objekt sollte ok sein: {msg})")
+            return 1
+        msg, ok = check_sha(f"{'d' * 40} (WIP, uncommitted)", wip_head, wip_root)
+        if ok or "STALE" not in msg:
+            print(f"selftest: FAIL (WIP ohne Objekt sollte STALE sein: {msg})")
             return 1
         if head:
             bad = tmp / "mismatch.md"
