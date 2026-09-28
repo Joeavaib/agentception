@@ -26,7 +26,7 @@ Regel: Pfad repo-relativ, SHA kurz (7+) oder voll, Range `L<von>-<bis>` oder `L<
 
 Format: `repo#PR@SHA` (Provenienz: welcher PR-Stand gemeint ist):
 
-- `inception#12@abc1234` (PR 12, Head-SHA abc1234)
+- `myrepo#12@abc1234` (PR 12, Head-SHA abc1234)
 - Empfaenger: PR fetch/checkout, dann `git diff <SHA> HEAD --stat` (Drift-Check).
 
 ## 4. Empfaenger-Rezept

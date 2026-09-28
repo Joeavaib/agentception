@@ -13,6 +13,8 @@ python3 -m pytest tests/ -q               # 4. Tests gruen (Renderer Golden-Hash
 ```
 
 Nur bei `result: FRESH` + Tests gruen resume. Sonst STOP, neues Handoff anfordern.
+Frisch geklont? Erst `cp .handoff.example.md .handoff.md`, TODOs fuellen
+(`erstellt_am`=jetzt UTC, `gueltig_bis`=+2h, `commit`=HEAD-SHA), dann Step-0.
 
 ## 2. Stale-Detektor (`tools/verify_handoff.py`)
 

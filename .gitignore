@@ -1,4 +1,5 @@
-# Scratch / Runtime-State (kein Switch-Payload, nie committen)
+# Lokaler Instanz-State (pro Clone frisch anlegen, nie committen)
+.handoff.md
 .rfg/
 __pycache__/
 *.pyc

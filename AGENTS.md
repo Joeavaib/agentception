@@ -37,4 +37,4 @@
 - `python3 tools/verify_handoff.py --selftest` — Handoff-Verifikation
 - `tools/switch_to_codex.sh --help` — Switch-UX Hilfe
 === CTX:CORE:v1:END ===
-<!-- ctx:schema=v1 volatile: date=2026-09-28 branch=main -->
+<!-- ctx:schema=v1 volatile: date=<YYYY-MM-DD> branch=<name> -->
